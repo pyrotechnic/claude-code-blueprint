@@ -59,3 +59,48 @@ Every task — trivial or non-trivial — produces a plan file. Where plan files
 ## Verify-Before-Exit-Plan
 
 Before calling ExitPlanMode, spawn the `verify-plan` agent to run the 7-point checklist against your plan and the original user requirement. The agent has a fresh context window — different attention patterns catch blind spots that self-review cannot. See `~/.claude/agents/verify-plan.md`.
+
+## Plan Tracking
+
+Once a plan file exists (see Plan-First Rule for where it's filed), track it
+consistently across all projects:
+
+**Status vocabulary** — every phase uses:
+`Not Started | In Progress | Completed | Blocked | Cancelled`. Update the
+phase's Status line before starting work on it, not after.
+
+**Recommended model** — each phase should record the Claude model best
+suited to it. Keep this field accurate as the plan evolves; check it before
+actioning a phase to decide whether to switch models.
+
+**Plan file location during planning** — `EnterPlanMode` may draft the plan
+into a fixed location outside the current project (e.g. a profile-level
+scratch path). Treat that as a draft only. Before calling `ExitPlanMode`,
+ensure the canonical copy exists inside the project (per that project's own
+Plan Workflow conventions) — even if this means briefly exiting plan mode to
+write it there, then re-entering plan mode to finalize and request
+approval. A plan is not considered saved until it exists in the project,
+not just approved.
+
+**Testing considerations** — where applicable, plans should include a phase
+for creating automated tests using the project's own test tooling. Don't
+assume a specific framework — confirm what's actually installed before
+naming one.
+
+### Open Question Workflow
+
+Open questions are decision points, not implementation approval.
+
+When a user responds to an open question:
+- Update the relevant plan document
+- Record the user's decision
+- Update any affected phases, requirements, assumptions, risks, or implementation notes
+- Remove resolved questions from the Open Questions section where appropriate
+
+Unless the user explicitly instructs otherwise, a response to an open
+question does NOT constitute approval to begin or continue implementation,
+start the next phase, modify code, or execute the plan. After updating the
+plan, summarise the changes and wait for further instruction.
+
+Only begin or resume implementation when explicitly instructed
+("implement the plan", "action phase X", "continue implementation", etc.).
