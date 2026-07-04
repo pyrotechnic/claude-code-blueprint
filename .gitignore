@@ -4,3 +4,5 @@
 *.key
 .env
 .env.*
+.idea
+.idea/*

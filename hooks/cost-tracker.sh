@@ -1,5 +1,5 @@
 #!/bin/bash
-# Hook: Stop (async) — Cost Tracker
+# Hook: Stop (sync) — Cost Tracker
 # Appends a JSONL entry per stop event with real token usage, cost (USD + GBP),
 # and the currently active plan/phase (from docs/plans/*.md).
 #
@@ -161,6 +161,13 @@ def refresh_fx_rate_if_stale(pricing, pricing_file):
         print(f'cost-tracker: fx refresh failed: {e}', file=sys.stderr)
         return pricing
 
+def base_model_id(model):
+    if not model:
+        return model
+    # Strip a trailing -YYYYMMDD snapshot suffix, e.g.
+    # claude-sonnet-5-6-20260528 -> claude-sonnet-5-6
+    return re.sub(r'-\d{8}$', '', model)
+
 def compute_cost(usage, model, pricing_models):
     if not usage or not model or model not in pricing_models:
         return None
@@ -192,6 +199,7 @@ try:
     pricing_file = os.environ.get('HOOK_PRICING_FILE', '')
 
     usage, model = get_last_usage_and_model(transcript_path)
+    model_base = base_model_id(model)
     plan_id, phase = get_active_plan_and_phase(cwd)
 
     pricing = {}
@@ -206,11 +214,11 @@ try:
         pricing = refresh_fx_rate_if_stale(pricing, pricing_file)
 
     new_model_flagged = False
-    if pricing_file and model:
+    if pricing_file and model_base:
         pricing_models_check = pricing.get('models', {})
         pending = pricing.get('_pending_models', [])
-        if model not in pricing_models_check and model not in pending:
-            pending.append(model)
+        if model_base not in pricing_models_check and model_base not in pending:
+            pending.append(model_base)
             pricing['_pending_models'] = pending
             try:
                 tmp = pricing_file + '.tmp'
@@ -224,7 +232,7 @@ try:
     pricing_models = pricing.get('models', {})
     exchange_rate = pricing.get('exchange_rate', {}).get('usd_to_gbp')
 
-    cost_usd = compute_cost(usage, model, pricing_models)
+    cost_usd = compute_cost(usage, model_base, pricing_models)
     cost_gbp = round(cost_usd * exchange_rate, 6) if (cost_usd is not None and exchange_rate is not None) else None
 
     current_month = timestamp[:7] if len(timestamp) >= 7 else ''
@@ -270,10 +278,10 @@ try:
         print(f'cost-tracker: write failed: {e}', file=sys.stderr)
 
     if new_model_flagged:
-        msg = ('cost-tracker: new model ' + repr(model) +
-               ' has no pricing entry in ~/.claude/hooks/pricing.json (added to _pending_models). '
-               'Look up current per-MTok pricing (see the claude-api skill) and fill it in, or edit the file manually.')
-        print(json.dumps({'systemMessage': msg}))
+        print(f'cost-tracker: new model {model_base!r} recorded to _pending_models in {pricing_file}', file=sys.stderr)
+        print(json.dumps({
+            'systemMessage': f'New model pending pricing: {model_base!r}. Run /request-model-prices to fetch and record it.'
+        }))
 except Exception as e:
     print(f'cost-tracker: unexpected failure: {e}', file=sys.stderr)
 "
