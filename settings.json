@@ -64,12 +64,10 @@
       "WebSearch",
       "__ SKILLS __",
       "Skill(update-config)",
-      "__ PLAN WORKFLOW (docs/plans/) __",
       "Edit(docs/plans/**)",
       "Write(docs/plans/**)",
       "Bash(mv docs/plans/*)",
       "PowerShell(Move-Item docs/plans/*)",
-      "__ PLAN MODE SCRATCH (~/.claude/plans/) __",
       "Edit(~/.claude/plans/**)",
       "Write(~/.claude/plans/**)",
       "Bash(mv ~/.claude/plans/*)",
@@ -230,5 +228,6 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "theme": "dark"
+  "theme": "dark",
+  "agentPushNotifEnabled": true
 }

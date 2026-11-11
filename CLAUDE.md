@@ -54,7 +54,7 @@ If the user gives an instruction that requires non-trivial changes without reque
 
 The user prefers human review before execution. Plan -> Review -> Execute.
 
-Non-trivial tasks produce a plan file. A trivial task needs no plan file; a one-line note in the todo list is enough. Where plan files are filed (naming, folder location, archiving convention) is project-specific — see the current project's own CLAUDE.md for its Plan Workflow section.
+Non-trivial tasks produce a plan file. A trivial task needs no plan file; a one-line note in the todo list is enough. Where plan files are filed and archived follows the defaults under "Plan Tracking → Plan files: default location and archiving", unless the current project's own CLAUDE.md has a Plan Workflow section that overrides them.
 
 ## Verify-Before-Exit-Plan
 
@@ -64,6 +64,23 @@ Before calling ExitPlanMode, spawn the `verify-plan` agent to run the 7-point ch
 
 Once a plan file exists (see Plan-First Rule for where it's filed), track it
 consistently across all projects:
+
+**Plan files: default location and archiving** — a project's own CLAUDE.md
+Plan Workflow section overrides any of these. Where it is missing or silent on
+a point, use the default and say so once in the plan; never treat "not
+defined" as "skip it".
+- **Active plans:** `<project root>/docs/plans/<short-kebab-name>-plan.md`
+  (create the folder if needed). This matches NodeCraft and claude-config,
+  and the global permissions already allow edits there.
+- **Archive:** when every phase is Completed or Cancelled, move the plan to
+  `docs/plans/archived/` under the same filename, add a one-line outcome and
+  completion date under its title, and update every reference to the old
+  path (project files, rules, skills, memory). Do it in the same step as the
+  plan's final commit, not later.
+- **Not archived:** living documents that have no phases to finish
+  (roadmaps, overviews, catalogs, running notes) stay where they are.
+- If a project needs a different structure, write it into that project's
+  CLAUDE.md as a Plan Workflow section rather than leaving it implicit.
 
 **Status vocabulary** — every phase uses:
 `Not Started | In Progress | Completed | Blocked | Cancelled`. Update the
@@ -77,7 +94,7 @@ actioning a phase to decide whether to switch models.
 into a fixed location outside the current project (e.g. a profile-level
 scratch path). Treat that as a draft only. Before calling `ExitPlanMode`,
 ensure the canonical copy exists inside the project (per that project's own
-Plan Workflow conventions) — even if this means briefly exiting plan mode to
+Plan Workflow conventions, else the default above) — even if this means briefly exiting plan mode to
 write it there, then re-entering plan mode to finalize and request
 approval. A plan is not considered saved until it exists in the project,
 not just approved.
