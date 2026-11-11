@@ -91,24 +91,76 @@ def get_last_usage_and_model(transcript_path):
     except Exception:
         return None, None
 
-def get_active_plan_and_phase(cwd):
+def _try_parse_plan_tool_use(raw):
+    if b'tool_use' not in raw or b'docs' not in raw:
+        return None
+    try:
+        entry = json.loads(raw.decode('utf-8', errors='replace'))
+    except Exception:
+        return None
+    msg = entry.get('message') if isinstance(entry, dict) else None
+    content = msg.get('content') if isinstance(msg, dict) else None
+    if not isinstance(content, list):
+        return None
+    for c in content:
+        if not isinstance(c, dict) or c.get('type') != 'tool_use':
+            continue
+        if c.get('name') not in ('Read', 'Edit', 'Write'):
+            continue
+        inp = c.get('input')
+        if not isinstance(inp, dict):
+            continue
+        file_path = inp.get('file_path')
+        if not isinstance(file_path, str):
+            continue
+        normalized = file_path.replace('\\\\', '/').lower()
+        if '/docs/plans/' not in normalized:
+            continue
+        if '/docs/plans/archived/' in normalized:
+            continue
+        if not normalized.endswith('.md'):
+            continue
+        return file_path.replace('\\\\', '/').rsplit('/', 1)[-1]
+    return None
+
+def find_active_plan_file(transcript_path):
+    if not transcript_path or not os.path.isfile(transcript_path):
+        return None
+    try:
+        file_size = os.path.getsize(transcript_path)
+        with open(transcript_path, 'rb') as f:
+            data, pos, scanned = b'', file_size, 0
+            while pos > 0 and scanned < MAX_SCAN_BYTES:
+                read_size = min(CHUNK_SIZE, pos)
+                pos -= read_size
+                f.seek(pos)
+                data = f.read(read_size) + data
+                scanned += read_size
+                lines = data.split(b'\n')
+                data = lines[0]
+                for raw in reversed(lines[1:]):
+                    name = _try_parse_plan_tool_use(raw)
+                    if name:
+                        return name
+            if pos == 0 and data:
+                name = _try_parse_plan_tool_use(data)
+                if name:
+                    return name
+            return None
+    except Exception:
+        return None
+
+def get_active_plan_and_phase(cwd, transcript_path):
     if not cwd or not os.path.isdir(cwd):
         return None, None
-    plans_dir = os.path.join(cwd, 'docs', 'plans')
-    if not os.path.isdir(plans_dir):
+    plan_name = find_active_plan_file(transcript_path)
+    if not plan_name:
         return None, None
+    plan_path = os.path.join(cwd, 'docs', 'plans', plan_name)
+    if not os.path.isfile(plan_path):
+        return None, None
+    plan_id = plan_name[:-len('.md')] if plan_name.endswith('.md') else plan_name
     try:
-        candidates = []
-        for name in os.listdir(plans_dir):
-            full = os.path.join(plans_dir, name)
-            if os.path.isfile(full) and name.endswith('.md'):
-                candidates.append((os.path.getmtime(full), full, name))
-        if not candidates:
-            return None, None
-        candidates.sort(reverse=True)
-        _, plan_path, plan_name = candidates[0]
-        plan_id = plan_name[:-len('.md')]
-
         current_heading, phase_heading = None, None
         with open(plan_path, 'r', encoding='utf-8', errors='replace') as f:
             for line in f:
@@ -122,9 +174,9 @@ def get_active_plan_and_phase(cwd):
                         phase_heading = current_heading
                         break
                     current_heading = None
-        return (plan_id, phase_heading) if phase_heading else (None, None)
+        return plan_id, phase_heading
     except Exception:
-        return None, None
+        return plan_id, None
 
 def refresh_fx_rate_if_stale(pricing, pricing_file):
     try:
@@ -200,7 +252,7 @@ try:
 
     usage, model = get_last_usage_and_model(transcript_path)
     model_base = base_model_id(model)
-    plan_id, phase = get_active_plan_and_phase(cwd)
+    plan_id, phase = get_active_plan_and_phase(cwd, transcript_path)
 
     pricing = {}
     if pricing_file and os.path.isfile(pricing_file):
