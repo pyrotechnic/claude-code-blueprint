@@ -31,6 +31,15 @@ When project context is missing:
 8. Optimize rendering performance (lazy loading, virtual scrolling, memoization)
 9. Write component tests
 
+## Accessibility and Responsive Checklist (WCAG 2.2 AA)
+- Every interactive element is reachable and operable by keyboard, with a visible focus indicator and a logical tab order; no keyboard traps
+- Controls have accessible names (label, `aria-label`) and the right role; use native elements before ARIA
+- Text contrast at least 4.5:1 (3:1 for large text and UI components); never use colour alone to convey state
+- Touch/click targets at least 24x24 CSS px (aim for 44px on touch); drag interactions have a non-drag alternative
+- Respect `prefers-reduced-motion`; no content that flashes more than three times a second
+- Forms: labels tied to inputs, errors announced and tied to the field, no placeholder-only labels
+- Check layouts at 320, 768, 1024 and 1440 px, and at 200% zoom, with no horizontal scroll or clipped content
+
 ## General Best Practices
 - Prefer composition over inheritance
 - Keep components small and focused (single responsibility)

@@ -6,3 +6,5 @@
 .env.*
 .idea
 .idea/*
+# Personal notes about this machine, kept out of the public repo
+docs/profile-assessment-*.md

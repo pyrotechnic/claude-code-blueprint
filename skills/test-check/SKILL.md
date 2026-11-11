@@ -10,6 +10,7 @@ Run the full test suite and provide analysis:
    - Check `CLAUDE.md` or `package.json` in the project root for the test command and package manager
    - Common patterns: `yarn test:unit`, `npm run test`, `npx vitest run`
    - Default (no context): ask which project
+   - Find the project's own runner first (`composer.json`/`phpunit.xml`/Pest config for PHP, `package.json` scripts for JS); never guess a command
 2. **If no test command is documented in CLAUDE.md/package.json AND no test-framework config file exists** (`jest.config.*`, `vitest.config.*`, `playwright.config.*`): report "No test framework configured yet" and stop rather than guessing a command.
 3. Run the appropriate test command and capture output
 4. Report summary: total tests, passed, failed, skipped, duration
@@ -19,6 +20,7 @@ Run the full test suite and provide analysis:
    - If no baseline is documented: parse the test summary output line for total count; compare against previous runs if agent memory has a baseline
    - If actual count is higher than baseline, the test suite grew; if lower, investigate missing tests
 7. Check if recently modified files have corresponding tests
+   - **If the change is a bug fix (Prove-It):** confirm a test that reproduces the bug exists and fails without the fix. If there is none, write that failing test first, watch it fail, then apply or keep the fix and confirm it passes
 8. Identify test coverage gaps for critical paths
 9. Suggest new tests if coverage is insufficient
 10. **E2E tests** (run if user says "e2e", "all", or "full"):

@@ -68,13 +68,30 @@
       "Edit(docs/plans/**)",
       "Write(docs/plans/**)",
       "Bash(mv docs/plans/*)",
-      "PowerShell(Move-Item docs/plans/*)"
+      "PowerShell(Move-Item docs/plans/*)",
+      "__ PLAN MODE SCRATCH (~/.claude/plans/) __",
+      "Edit(~/.claude/plans/**)",
+      "Write(~/.claude/plans/**)",
+      "Bash(mv ~/.claude/plans/*)",
+      "PowerShell(Move-Item ~/.claude/plans/*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(~/.claude/.credentials.json)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f*)",
+      "PowerShell(git reset --hard*)"
     ],
     "defaultMode": "dontAsk",
     "additionalDirectories": [
       "~/.claude",
       "~/.claude/hooks",
-      "~/.claude/logs"
+      "~/.claude/logs",
+      "~/.claude/plans"
     ]
   },
   "model": "sonnet",
@@ -92,12 +109,17 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/block-git-push.sh\""
-          },
+            "command": "bash \"$HOME/.claude/hooks/careful-guard.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/pre-commit-secret-scan.sh\""
@@ -127,33 +149,12 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/notify-file-changed.sh\"",
-            "async": true
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/post-commit-review.sh\"",
             "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "mcp__*",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "An MCP tool call failed. Common causes: 1) MCP server crashed -- try once more. 2) Docker not running (docker MCP). 3) Browser closed (playwright MCP). If retry fails, fall back to non-MCP alternatives (curl for web, docker CLI for containers)."
           }
         ]
       }
@@ -188,7 +189,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations -- just conversation or explanation -- respond {\"ok\": true} immediately without further analysis. Otherwise, review the last response for these issues: 1) Security vulnerabilities: SQL injection, XSS, command injection, exposed secrets or hardcoded credentials. 2) ORM models referenced that don't exist in the schema. 3) Project-specific violations from CLAUDE.md (check soft-delete patterns, API conventions, navigation patterns). 4) Unauthorized git push commands (check CLAUDE.md for push policy). 5) Verification gap: if code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm changes), this is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
+            "prompt": "If the last response contained no code, no file edits, no bash commands, and no git operations -- just conversation or explanation -- respond {\"ok\": true} immediately without further analysis. Otherwise check one thing only: verification gap. If code was written or a feature was implemented but NO verification step was performed (no test run, no endpoint check, no file re-read to confirm the change landed), that is a violation. Respond with JSON only: {\"ok\": true} or {\"ok\": false, \"reason\": \"concise description of the issue\"}",
             "model": "sonnet"
           },
           {
@@ -220,10 +221,14 @@
     "type": "command",
     "command": "bash \"$HOME/.claude/hooks/status-line.sh\""
   },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "claude-security@claude-plugins-official": true,
+    "php-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "theme": "dark",
-  "enabledPlugins": {
-    "context7@claude-plugins-official": true
-  }
+  "theme": "dark"
 }

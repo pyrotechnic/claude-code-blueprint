@@ -1,7 +1,8 @@
 #!/bin/bash
 # PostToolUse hook (async): After a git commit, remind Claude to review changes.
 # Only triggers on actual git commit commands, not amend/help/dry-run.
-# Pattern: same stdin JSON parsing as notify-file-changed.sh
+# Silent for ordinary commits: it only speaks when the commit touched high-risk files
+# (auth, middleware, policies, migrations, sanctum/cors/session config, .env).
 
 PYTHON=$(command -v python 2>/dev/null || command -v python3 2>/dev/null)
 if [ -z "$PYTHON" ]; then
@@ -48,8 +49,13 @@ else
   FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l | tr -d ' ')
 fi
 HIGH_RISK=""
-if echo "$CHANGED_FILES" | grep -qiE '(guard|middleware|auth|prisma\.schema|\.env)'; then
+if echo "$CHANGED_FILES" | grep -qiE '(guard|middleware|auth|polic(y|ies)|migrations?/|config/(auth|sanctum|cors|session)|sanctum|\.env)'; then
   HIGH_RISK=" HIGH-RISK FILES DETECTED (auth/guard/middleware/schema/env) -- review is strongly recommended."
+fi
+
+# Ordinary commit: stay silent (no reminder, no context cost)
+if [ -z "$HIGH_RISK" ]; then
+  exit 0
 fi
 
 # Build file list (truncate if >10 files)

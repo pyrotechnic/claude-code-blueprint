@@ -10,10 +10,10 @@ Create a sprint plan for: $ARGUMENTS
 1. **Analyze the requirement**: Understand scope, constraints, dependencies
 2. **Check existing code**: Search codebase for related implementations that can be reused
 3. **Break into tasks**:
-   - Each task should be independently deliverable
+   - Each task should be independently deliverable and a **vertical slice**: a thin end-to-end piece (data, logic and UI/API) that works on its own, not a horizontal layer such as "all models" then "all endpoints"
    - Include file paths that will be modified or created
    - Estimate size: S (< 1hr), M (1-4hr), L (4-8hr), XL (> 1 day)
-4. **Sequence tasks**: Identify dependencies, mark blocking tasks, find parallelizable work
+4. **Sequence tasks**: Identify dependencies, mark blocking tasks, find parallelizable work. Add a **checkpoint** (run tests, review, confirm direction) after every 2-3 tasks
 5. **Identify risks**: What could go wrong? What needs clarification?
 6. **Output format**:
 
@@ -26,6 +26,8 @@ Create a sprint plan for: $ARGUMENTS
 
 ### Risks
 - [Risk description and mitigation]
+
+**Existing plans:** never overwrite or replace an unfinished plan without asking. Save a new plan under a new name or ask which to keep.
 
 ### Definition of Done
 - [ ] All tasks completed

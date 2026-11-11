@@ -1,6 +1,6 @@
 ---
 description: Verify the actually-installed library/framework version before answering "how do I do X" questions or writing code against a library's API — prevents stale training-data answers (e.g. describing Laravel 5 syntax when the project is on Laravel 12)
-globs:
+paths:
   - "**/*.ts"
   - "**/*.tsx"
   - "**/*.js"
@@ -32,8 +32,10 @@ before assuming one.
 ## 2. Verify current usage against that version
 - Prefer `context7` (`resolve-library-id` + `get-library-docs`) for current,
   version-matched documentation.
-- If `context7`'s tools aren't available or fail, fall back to `WebSearch`/`WebFetch`
-  for the official docs at that version.
+- If `context7`'s tools aren't available or fail to connect (it can time out or need
+  authorising via `/mcp`), fall back to the Laravel Boost docs search where available,
+  then `WebSearch`/`WebFetch` for the official docs at that version, and say which
+  source and version you used.
 - Don't present a remembered API from training data as current without one of the
   above checks — especially for fast-moving frameworks (Laravel, Next.js, React,
   Rails, etc.) where major-version behavior changes often.

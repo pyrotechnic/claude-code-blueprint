@@ -54,7 +54,7 @@ If the user gives an instruction that requires non-trivial changes without reque
 
 The user prefers human review before execution. Plan -> Review -> Execute.
 
-Every task — trivial or non-trivial — produces a plan file. Where plan files are filed (naming, folder location, archiving convention) is project-specific — see the current project's own CLAUDE.md for its Plan Workflow section.
+Non-trivial tasks produce a plan file. A trivial task needs no plan file; a one-line note in the todo list is enough. Where plan files are filed (naming, folder location, archiving convention) is project-specific — see the current project's own CLAUDE.md for its Plan Workflow section.
 
 ## Verify-Before-Exit-Plan
 

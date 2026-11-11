@@ -33,7 +33,13 @@ Review for:
 9. Framework-specific best practices (check project framework)
 10. API response consistency
 
-Output: Findings table with severity (CRITICAL/HIGH/MEDIUM/LOW), file path, line number, and recommendation.
-Do NOT modify code — only report findings.
+Before reporting a finding, verify it: Grep for callers and usages of the code involved, and drop or downgrade the finding if the problem cannot actually occur given how the code is called.
+
+Output: Findings table with severity, file path, line number, and recommendation. Use these labels:
+- **Critical**: security hole, data loss, crash or broken build. Blocks merge.
+- **Required**: real bug, missing error handling, missing test for changed behaviour. Fix before merge.
+- **Nit**: style or minor readability. Optional.
+- **FYI**: context or a possible follow-up, no action needed in this change.
+Do NOT modify code — only report findings. Do not edit, run or temporarily change source to test a theory; reason from the code and its tests.
 
 After reviewing: update your memory with newly discovered patterns and systemic issues worth tracking across sessions.
